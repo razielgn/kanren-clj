@@ -1,5 +1,6 @@
 (ns kanren.goal
   (:require [kanren.state :as state]
+            [kanren.peano :as peano]
             [kanren.pair :refer :all]))
 
 (defn pursue-in [goal state]
@@ -41,3 +42,12 @@
               (both (both (equal a (pair first rest-of-a))
                           (equal c (pair first rest-of-c)))
                     (append rest-of-a b rest-of-c))))))
+
+(defn add [x y z]
+  (either (both (equal x peano/ZERO)
+                (equal y z))
+          (with-vars [smaller-x smaller-z]
+            (fn [smaller-x smaller-z]
+              (both (both (equal x (pair peano/INC smaller-x))
+                          (equal z (pair peano/INC smaller-z)))
+                    (add smaller-x y smaller-z))))))

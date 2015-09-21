@@ -2,6 +2,7 @@
   (:require [clojure.test :refer :all]
             [kanren.state :refer :all]
             [kanren.pair :refer :all]
+            [kanren.peano :refer :all]
             [kanren.goal :as goal]))
 
 (deftest test-goal-equal
@@ -94,4 +95,24 @@
         [state] (doall (goal (make-state)))
         [x] (variables state)]
     (is (= (->list "lo")
+           (value-of state x)))))
+
+(deftest goal-with-add
+  (let [goal (goal/with-vars [x]
+               (fn [x] (goal/add (->peano 5)
+                                 (->peano 3)
+                                 x)))
+        [state] (doall (goal (make-state)))
+        [x] (variables state)]
+    (is (= (->peano 8)
+           (value-of state x)))))
+
+(deftest goal-with-add-backwards
+  (let [goal (goal/with-vars [x]
+               (fn [x] (goal/add x
+                                 (->peano 3)
+                                 (->peano 8))))
+        [state] (doall (goal (make-state)))
+        [x] (variables state)]
+    (is (= (->peano 5)
            (value-of state x)))))
