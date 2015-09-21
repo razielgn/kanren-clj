@@ -1,4 +1,5 @@
-(ns kanren.state)
+(ns kanren.state
+  (:require [kanren.pair :refer :all]))
 
 (defrecord State [counter variables values])
 (defrecord Variable [id label])
@@ -35,9 +36,13 @@
 (defn value-of [state k]
   (let [values (:values state)]
     (loop [k k]
-      (if (contains? values k)
-        (recur (get values k))
-        k))))
+      (cond
+        (contains? values k)
+          (recur (get values k))
+        (pair? k)
+          (pair (value-of state (left k))
+                (value-of state (right k)))
+        :else k))))
 
 (defn unify [state a b]
   (let [a (value-of state a)
@@ -48,4 +53,7 @@
       (instance? Variable a)
         (assign-values state {a b})
       (instance? Variable b)
-        (assign-values state {b a}))))
+        (assign-values state {b a})
+      (and (pair? a) (pair? b))
+        (if-let [state' (unify state (left a) (left b))]
+          (unify state' (right a) (right b))))))

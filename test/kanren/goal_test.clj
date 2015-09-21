@@ -1,6 +1,7 @@
 (ns kanren.goal-test
   (:require [clojure.test :refer :all]
             [kanren.state :refer :all]
+            [kanren.pair :refer :all]
             [kanren.goal :as goal]))
 
 (deftest test-goal-equal
@@ -47,3 +48,11 @@
                                                     (goal/equal x 2))))
         states (doall (goal (make-state)))]
     (is (empty? states))))
+
+(deftest goal-with-simple-pair
+  (let [goal (goal/with-vars [x y] (fn [x y] (goal/equal (pair 3 x)
+                                                         (pair y (pair 5 y)))))
+        [state] (doall (goal (make-state)))
+        [x y] (variables state)]
+    (is (= {y 3 x (pair 5 3)}
+           (values state)))))
