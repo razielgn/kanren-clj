@@ -1,13 +1,15 @@
 (ns kanren.goal
-  (:require [kanren.state :as state]))
+  (:require [kanren.state :as state]
+            [kanren.pair :refer :all]))
 
 (defn pursue-in [goal state]
   (goal state))
 
 (defn pursue-in-each [goal states]
-  (when-let [[x & xs] states]
-    (lazy-cat (pursue-in goal x)
-              (pursue-in-each goal xs))))
+  (let [[x & xs] states]
+    (when x
+      (lazy-cat (pursue-in goal x)
+                (pursue-in-each goal xs)))))
 
 (defmacro with-vars [vars goal-fn]
   `(fn [state#]
@@ -30,3 +32,12 @@
   (fn [state]
     (let [states (pursue-in goal-a state)]
       (pursue-in-each goal-b states))))
+
+(defn append [a b c]
+  (either (both (equal a nil)
+                (equal b c))
+          (with-vars [first, rest-of-a, rest-of-c]
+            (fn [first, rest-of-a, rest-of-c]
+              (both (both (equal a (pair first rest-of-a))
+                          (equal c (pair first rest-of-c)))
+                    (append rest-of-a b rest-of-c))))))

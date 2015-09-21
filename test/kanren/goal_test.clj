@@ -56,3 +56,42 @@
         [x y] (variables state)]
     (is (= {y 3 x (pair 5 3)}
            (values state)))))
+
+(deftest goal-with-list
+  (let [goal (goal/with-vars [x y z]
+               (fn [x y z] (goal/equal (->list [x 2 z])
+                                       (->list [1 y 3]))))
+        [state] (doall (goal (make-state)))
+        [x y z] (variables state)]
+    (is (= {x 1 y 2 z 3}
+           (values state)))))
+
+(deftest goal-with-append
+  (let [goal (goal/with-vars [x]
+               (fn [x] (goal/append (->list "he")
+                                    (->list "llo")
+                                    x)))
+        [state] (doall (goal (make-state)))
+        [x] (variables state)]
+    (is (= (->list "hello")
+           (value-of state x)))))
+
+(deftest goal-with-append-backwards
+  (let [goal (goal/with-vars [x]
+               (fn [x] (goal/append x
+                                    (->list "lo")
+                                    (->list "hello"))))
+        [state] (doall (goal (make-state)))
+        [x] (variables state)]
+    (is (= (->list "hel")
+           (value-of state x)))))
+
+(deftest goal-with-append-middle
+  (let [goal (goal/with-vars [x]
+               (fn [x] (goal/append (->list "hel")
+                                    x
+                                    (->list "hello"))))
+        [state] (doall (goal (make-state)))
+        [x] (variables state)]
+    (is (= (->list "lo")
+           (value-of state x)))))
